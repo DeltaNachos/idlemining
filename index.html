@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 
@@ -86,6 +86,24 @@ table, td, th {
   text-align: center;
   font-weight: normal;
 }
+
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    overflow: auto;
+    font-size: 1.3em;
+    border: 1px solid black;
+    margin-left: auto;
+    margin-right: auto;
+    width: 85%;
+    text-align: center;
+}
+
+.flex-item {
+    border-right: 1px solid black;
+    padding: 15px;
+    flex-basis: 200px;
+}
 </style>
 
 <head>
@@ -95,6 +113,59 @@ table, td, th {
     <p id="sub">A Clicking Game</p>
 </head>
 <body>
+
+<div class="flex-container">
+    <div class="flex-item">
+        Placeholder story
+    </div>
+    <div class="flex-item">
+        Dirt per second: <span id="dirtick">0</span>
+        <br>
+        Energy per second: <span id="energytick">0</span>
+    </div>
+    <div class="flex-item">
+        Dirt: <span id="dirt">0</span>
+        <br>
+        <button class="button" onclick="mouseMine(1)">
+        Mine Dirt
+        </button>
+    </div>
+    <div class="flex-item">
+        <button title="Each level adds 1 dirt per click/auto" onclick="upgMine()">
+        Upgrade Dirt Clicks
+        </button>
+        <br>
+        Level: <span id="minelvl">1</span>/5
+        <br>
+        Cost: <span id="clickcost">21 Dirt</span>
+    </div>
+    <div class="flex-item">
+        <button title="Consumes 0.5 energy/second to produce dirt" onclick="buyMiner(1)">
+        Buy 1 Miner
+        </button>
+        <br>
+        Miners: <span id="miners">0</span>/50
+        <br>
+        Cost: <span id="minecost">10 Dirt</span>
+        <br>
+        <input type="checkbox" id="mineron" checked> Enable/Disable Miners
+    </div>
+    <div class="flex-item">
+        <button title="Converts 10 dirt into 1 silica for 1 energy/second" onclick="buySifter(1)">
+        Buy 1 Soil Sifter
+        </button>
+        <br>
+        Sifters: <span id=sifters>0</span>
+        <br>
+        Cost: <span id="siftcost">100 Dirt</span>
+    </div>
+    <div class="flex-item">
+        Sell Dirt
+        <br>
+        Sell Silica
+    </div>
+</div>
+
     <table>
         <tr><th>
     Dirt per second: <span id="dirtick">0</span>
@@ -130,10 +201,25 @@ table, td, th {
     Cost: <span id="minecost">10 Dirt</span>
     <br>
     <input type="checkbox" id="mineron" checked> Enable/Disable Miners
+
+        <th>
+    <button title="Converts 10 dirt into 1 silica for 1 energy/second" onclick="buySifter(1)">
+        Buy 1 Soil Sifter
+    </button>
+    <br>
+    Sifters: <span id=sifters>0</span>
+    <br>
+    Cost: <span id="siftcost">100 Dirt</span>
+        </th>
         </th></tr>
 
-        <td></td>
-
+        <td>
+    Power: $x
+    <br>
+    Dirt: $y
+    <br>
+    Silica: $z
+        </td>
         <td>
     Energy: <span id="energy">0</span>/100
     <br>
@@ -161,7 +247,12 @@ table, td, th {
     <br>
     Cost: <span id="pancost">20 Energy</span>
         </td>
-
+        <td>
+    <button title="Increases max power by 10" onclick="buyBattery(1)">
+        Buy 1 Battery
+    </button>
+        </td>
+        </tr>
     </table>
     <br>
 
@@ -194,6 +285,27 @@ var dirt = 0;
 var miners = 0;
 var minelvl = 1;
 var minemax = 50;
+var sifters = 0;
+/*  Future materials
+Copper - Metal Detectors
+Iron - Forges
+Aluminum - Bauxite Refinement
+Steel - Blast Furnaces
+Titanium - Chemical Processing
+Lead - Underground Ventilation
+Gold - Wash Plants
+Uranium - Centrifuges
+---
+After all resource implementation and resource transfer
+---
+Gas Extraction - Hydrogen and Helium
+Nuclear and Fusion Technology
+Particle Accelerator - Antimatter
+AI optimization! ;) (optional)
+Direct Resource Conversion (Transmutation)
+Planet/System Consumption vs Democratic Relations vs Mass Enslavement
+Funny moment
+*/
 var energy = 0;
 var energymax = 100;
 var panels = 0;
@@ -228,17 +340,17 @@ function makeEnergy(number) {
     } else {
     energy = energymax;
     };
-    document.getElementById("energy").innerHTML = round(energy);
+    document.getElementById("energy").innerHTML = energy;
     eticks = eticks + number;
 };
 
 //makes miners drain energy
 function drainEnergy() {
-    if (energy >= miners/2 && document.getElementById("mineron").checked == true) {
-    energy = energy - (miners/2);
-    eticks = eticks - (miners/2);
+    if (energy >= miners && document.getElementById("mineron").checked == true) {
+    energy = energy - miners;
+    eticks = eticks - miners;
     mouseMine(miners);
-    document.getElementById("energy").innerHTML = round(energy);
+    document.getElementById("energy").innerHTML = energy;
     };
 };
 
@@ -250,7 +362,7 @@ function dticker() {
 
 //outputs current production of energy
 function eticker() {
-    document.getElementById("energytick").innerHTML = round(eticks);
+    document.getElementById("energytick").innerHTML = eticks;
     eticks = 0;
 };
 
@@ -293,7 +405,7 @@ function upgEnergy() {
         energylvl = energylvl + 1;
         energy = energy - energycost;
         document.getElementById("energylvl").innerHTML = energylvl;
-        document.getElementById("energy").innerHTML = round(energy);
+        document.getElementById("energy").innerHTML = energy;
         var nextcost = Math.floor(20 + Math.pow(energylvl,3));
         document.getElementById("energycost").innerHTML = nextcost + " Energy";
         if (energylvl == clickmax) {
@@ -310,7 +422,7 @@ function buyPanel() {
         panels = panels + 1;
         energy = energy - pancost;
         document.getElementById("panels").innerHTML = panels;
-        document.getElementById("energy").innerHTML = round(energy);
+        document.getElementById("energy").innerHTML = energy;
         var nextcost = Math.floor(20 + Math.pow(panels,2));
         if (costcheck(nextcost,energymax) == energymax) {
             document.getElementById("pancost").innerHTML = energymax + " Energy";
@@ -350,7 +462,7 @@ function update() {
     document.getElementById("minecost").innerHTML = minecost;
     document.getElementById("minelvl").innerHTML = minelvl;
     document.getElementById("clickcost").innerHTML = clickcost;
-    document.getElementById("energy").innerHTML = round(energy);
+    document.getElementById("energy").innerHTML = energy;
     document.getElementById("energylvl").innerHTML = energylvl;
     document.getElementById("energycost").innerHTML = energycost;
     document.getElementById("panels").innerHTML = panels;
@@ -359,7 +471,7 @@ function update() {
     document.getElementById("prestigecost").innerHTML = presround(1000 * Math.pow(prestigelvl,1.4)) + " Dirt";
 };
 
-//rounds numbers
+//rounds numbers, deprecated
 function round(input) {
     var output = Math.round(input * 1000000)/1000000;
     if (output.toString().length < 3) {
@@ -419,7 +531,7 @@ function load() {
 //auto functions (miners drain energy, panels make energy)
 window.setInterval(function() {
     drainEnergy();
-    makeEnergy(panels/2);
+    makeEnergy(panels);
     dticker();
     eticker();
 }, 1000);
